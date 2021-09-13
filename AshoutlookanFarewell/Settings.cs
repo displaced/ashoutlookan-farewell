@@ -24,6 +24,7 @@ namespace AshoutlookanFarewell
         public static List<string> NomsDePlume = new List<string>();
         public static string MissiveFontFace = "";
         public static bool RandomisePlayhead = true;
+        public static bool FadeIn = true;
 
         static Random rnd = new Random();
 

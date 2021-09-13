@@ -17,7 +17,7 @@ namespace AshoutlookanFarewell
     {
         static LibVLC libvlc;
         static MediaPlayer player;
-        
+        static Random rnd = new Random();        
 
         /// <summary>
         /// Downloads media from YouTube.
@@ -70,6 +70,7 @@ namespace AshoutlookanFarewell
 
             var file = GetMediaFile();
             var media = new Media(libvlc, new Uri(file));
+            
             player = new MediaPlayer(media);
         }
 
@@ -80,7 +81,7 @@ namespace AshoutlookanFarewell
         /// </summary>
         public static void StartPlayback()
         {
-            player.Volume = 100;   
+            player.Volume = 0;
             
             var success = player.Play();
             if (!success)
@@ -88,6 +89,35 @@ namespace AshoutlookanFarewell
                 // Should do something useful if there's an error.
                 var err = libvlc.LastLibVLCError;
             }
+
+            
+            if (Settings.RandomisePlayhead)
+            {
+                // The VLC engine only populates `player.Position` once playback has started.  So,
+                // after we've called `.Play()` above, we watch until the playhead has moved above 0.
+                while (player.Position <= 0) { continue; }
+
+                // Pick a random start position between 0 and (trackDuration-30 sec).
+                float truncatedMediaLength = player.Length - (30 * 1000);
+                float playbackPosition = rnd.NextLong(0, (long)truncatedMediaLength);
+
+                // Convert position to a decimal percentage and set the playhead position
+                player.Position = playbackPosition / truncatedMediaLength;
+            }
+
+            if (Settings.FadeIn)
+            {
+                while (player.Volume < 98)
+                {
+                    player.Volume += 2;
+                    Thread.Sleep(75);
+                }
+            } else
+            {
+                player.Volume = 98;
+            }
+            
+
         }
 
 
